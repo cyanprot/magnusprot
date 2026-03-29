@@ -2,7 +2,11 @@
   "name": "magnusprot",
   "version": "1.0.0",
   "description": "Personal skill suite for Claude Code — workflow orchestration, TDD, debugging, code review, and utilities",
-  "license": "MIT",
+  "author": {
+    "name": "Jongmin Lee",
+    "url": "https://github.com/cyanprot"
+  },
   "repository": "https://github.com/cyanprot/magnusprot",
-  "keywords": ["skills", "claude-code", "workflow", "tdd", "debugging"]
+  "license": "MIT",
+  "keywords": ["workflow", "tdd", "debugging", "code-review"]
 }
