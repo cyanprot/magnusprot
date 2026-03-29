@@ -6,7 +6,7 @@
   "plugins": [
     {
       "name": "magnusprot",
-      "source": ".",
+      "source": "./",
       "description": "Personal skill suite for Claude Code — workflow orchestration, TDD, debugging, code review, and utilities"
     }
   ]
