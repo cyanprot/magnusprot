@@ -4,22 +4,20 @@ Personal skill suite for Claude Code — workflow orchestration, TDD-first devel
 
 ## Install
 
-**Official (Claude Code plugin):**
+**Claude Code plugin (official):**
 
 ```bash
-claude plugin install magnusprot@cyanprot
+# 1. Register marketplace
+/plugin marketplace add cyanprot/magnusprot
+
+# 2. Install plugin
+/plugin install magnusprot@magnusprot
 ```
 
-**Third-party (`npx skills`):**
+**Local (no install):**
 
 ```bash
-npx skills add cyanprot/magnusprot -y -g
-```
-
-**Local development:**
-
-```bash
-claude --plugin-dir ./magnusprot
+claude --plugin-dir ~/magnusprot
 ```
 
 ## Skills (29)

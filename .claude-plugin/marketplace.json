@@ -1,0 +1,13 @@
+{
+  "name": "magnusprot",
+  "owner": {
+    "name": "Jongmin Lee"
+  },
+  "plugins": [
+    {
+      "name": "magnusprot",
+      "source": ".",
+      "description": "Personal skill suite for Claude Code — workflow orchestration, TDD, debugging, code review, and utilities"
+    }
+  ]
+}
