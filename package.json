@@ -1,0 +1,9 @@
+{
+  "name": "magnusprot",
+  "version": "1.0.0",
+  "description": "Personal skill suite for Claude Code — workflow orchestration, TDD, debugging, code review, and utilities",
+  "type": "module",
+  "license": "MIT",
+  "repository": "https://github.com/cyan-ide/magnusprot",
+  "keywords": ["skills", "claude-code", "workflow", "tdd", "debugging"]
+}

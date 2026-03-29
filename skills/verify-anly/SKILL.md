@@ -1,0 +1,234 @@
+---
+name: verify-anly
+description: Use before claiming work is complete — plan compliance and execution evidence gate
+---
+
+# Verifying Work
+
+## Overview
+
+Two verification gates before claiming completion:
+1. **Gate 1 (Plan Compliance):** Did you build what was asked?
+2. **Gate 2 (Execution Evidence):** Did tests/build actually pass?
+
+**Core principle:** Evidence before claims, always. An implement's report is a claim, not evidence.
+
+**Violating the letter of this rule is violating the spirit of this rule.**
+
+---
+
+## Gate 1: Plan Compliance Verification
+
+Line-by-line verification that implementation matches the plan. Not "do tests pass?" but "did you build what was asked?"
+
+### When to Run Gate 1
+
+- After an agent reports a plan task or batch as complete
+- Before marking tasks complete
+- Before moving to the next task in `execute-flow`
+- When an implement's report feels vague or suspiciously quick
+
+### The Verification Process
+
+```dot
+digraph verify {
+    "Agent claims task complete" [shape=doublecircle];
+    "Extract plan steps for this task" [shape=box];
+    "For each step: read actual code" [shape=box];
+    "Step matches plan?" [shape=diamond];
+    "Record: MATCH" [shape=box];
+    "Deviation justified?" [shape=diamond];
+    "Record: APPROVED DEVIATION + reason" [shape=box];
+    "Record: VIOLATION" [shape=box style=filled fillcolor=salmon];
+    "All steps checked?" [shape=diamond];
+    "Any VIOLATION?" [shape=diamond];
+    "PASS Gate 1" [shape=box style=filled fillcolor=lightgreen];
+    "FAIL - list violations" [shape=box style=filled fillcolor=salmon];
+
+    "Agent claims task complete" -> "Extract plan steps for this task";
+    "Extract plan steps for this task" -> "For each step: read actual code";
+    "For each step: read actual code" -> "Step matches plan?";
+    "Step matches plan?" -> "Record: MATCH" [label="yes"];
+    "Step matches plan?" -> "Deviation justified?" [label="no"];
+    "Deviation justified?" -> "Record: APPROVED DEVIATION + reason" [label="yes"];
+    "Deviation justified?" -> "Record: VIOLATION" [label="no"];
+    "Record: MATCH" -> "All steps checked?";
+    "Record: APPROVED DEVIATION + reason" -> "All steps checked?";
+    "Record: VIOLATION" -> "All steps checked?";
+    "All steps checked?" -> "For each step: read actual code" [label="no"];
+    "All steps checked?" -> "Any VIOLATION?" [label="yes"];
+    "Any VIOLATION?" -> "FAIL - list violations" [label="yes"];
+    "Any VIOLATION?" -> "PASS Gate 1" [label="no"];
+}
+```
+
+<HARD-GATE>
+You MUST read the actual code for every plan step. Trusting the implement's report is not verification -- it's rubber-stamping.
+
+A silent skip (step not mentioned in report, not implemented in code) is the worst violation.
+</HARD-GATE>
+
+### Step-by-Step Checklist
+
+For EACH task in the plan:
+
+#### 1. Step Extraction
+Read the plan task. List every concrete action:
+- Files to create/modify (exact paths)
+- Code to write (classes, methods, signatures)
+- Tests to add (test names, assertions)
+- Commands to run (test, build, lint)
+- Commits to make (messages)
+
+#### 2. Code Inspection
+
+| Check | How |
+|-------|-----|
+| **File exists at specified path?** | Glob/Read the file |
+| **Code matches plan spec?** | Compare signatures, logic, behavior |
+| **Test exists and tests the right thing?** | Read test, verify assertions match plan |
+| **No silent additions?** | Check for unplanned classes, methods, files |
+| **No silent removals?** | Everything in plan is present |
+
+#### 3. Deviation Classification
+
+| Type | Definition | Action |
+|------|-----------|--------|
+| **MATCH** | Code matches plan exactly or equivalently | Record, move on |
+| **APPROVED DEVIATION** | Different but explicitly noted with technical justification | Record with reason |
+| **SILENT DEVIATION** | Different from plan, not mentioned in report | **VIOLATION** |
+| **SILENT SKIP** | Step not implemented at all, not mentioned | **VIOLATION** (worst case) |
+| **UNPLANNED ADDITION** | Code added that wasn't in plan | Flag -- may be scope creep |
+
+### Gate 1 Output Format
+
+```markdown
+## Implementation Verification: [Task Name]
+
+**Plan steps found:** N
+**Verified:** N
+
+| # | Plan Step | Status | Notes |
+|---|-----------|--------|-------|
+| 1 | [step description] | MATCH / DEVIATION / SKIP | [details] |
+| 2 | ... | ... | ... |
+
+### Violations (if any)
+- **SILENT SKIP:** [step] -- not implemented, not mentioned
+- **SILENT DEVIATION:** [step] -- plan said X, code does Y
+
+### Verdict
+PASS / FAIL (N violations)
+```
+
+---
+
+## Gate 2: Execution Evidence Verification
+
+### The Iron Law
+
+```
+NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
+```
+
+If you haven't run the verification command in this message, you cannot claim it passes.
+
+### The Gate Function
+
+```
+BEFORE claiming any status or expressing satisfaction:
+
+1. IDENTIFY: What command proves this claim?
+2. RUN: Execute the FULL command (fresh, complete)
+3. READ: Full output, check exit code, count failures
+4. VERIFY: Does output confirm the claim?
+   - If NO: State actual status with evidence
+   - If YES: State claim WITH evidence
+5. ONLY THEN: Make the claim
+
+Skip any step = lying, not verifying
+```
+
+### Common Failures
+
+| Claim | Requires | Not Sufficient |
+|-------|----------|----------------|
+| Tests pass | Test command output: 0 failures | Previous run, "should pass" |
+| Linter clean | Linter output: 0 errors | Partial check, extrapolation |
+| Build succeeds | Build command: exit 0 | Linter passing, logs look good |
+| Bug fixed | Test original symptom: passes | Code changed, assumed fixed |
+| Agent completed | VCS diff shows changes | Agent reports "success" |
+| Requirements met | Line-by-line checklist | Tests passing |
+
+### Key Patterns
+
+**Tests:**
+```
+[Run test command] [See: 34/34 pass] "All tests pass"
+NOT: "Should pass now" / "Looks correct"
+```
+
+**Build:**
+```
+[Run build] [See: exit 0] "Build passes"
+NOT: "Linter passed" (linter doesn't check compilation)
+```
+
+**Requirements:**
+```
+Re-read plan -> Create checklist -> Verify each -> Report gaps or completion
+NOT: "Tests pass, phase complete"
+```
+
+---
+
+## Red Flags - STOP
+
+- Using "should", "probably", "seems to"
+- Expressing satisfaction before verification
+- About to commit/push/PR without verification
+- Trusting agent success reports
+- Relying on partial verification
+- "Tests pass so it must be right" (tests verify behavior, not plan compliance)
+
+### Red Flag Phrases in Implementer Reports
+
+| Phrase | What it likely means |
+|--------|---------------------|
+| "Done!" / "All done!" | Skipped details -- verify everything |
+| "Implemented with minor adjustments" | Changed approach -- verify what changed |
+| "Slightly different approach" | Deviated from plan -- check scope |
+| "Also added..." | Unplanned work -- check scope creep |
+| No mention of a specific task step | Silently skipped -- verify immediately |
+| "Tests pass" without listing them | May not have written planned tests |
+
+## Rationalization Prevention
+
+| Excuse | Reality |
+|--------|---------|
+| "Should work now" | RUN the verification |
+| "I'm confident" | Confidence =/= evidence |
+| "Close enough" | Deviations compound -- verify exactly |
+| "Agent said success" | Verify independently |
+| "Too many steps to check" | Batch them -- but check every one |
+
+## Integration
+
+**Execution flow:**
+```
+plancheck-flow -> execute plan -> verify-anly -> commit/merge
+```
+
+**Called by:**
+- **execute-flow** - After each task/batch
+- **debug-anly** - Verify fix before claiming success
+- Any workflow before claiming completion
+
+## The Bottom Line
+
+**No shortcuts for verification.**
+
+Gate 1: Read the code. Check the plan. Count the steps.
+Gate 2: Run the command. Read the output. THEN claim the result.
+
+This is non-negotiable.

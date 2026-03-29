@@ -1,0 +1,306 @@
+---
+name: trace-anly
+description: Use when adding function tracing — entry/exit logging, call depth visualization
+user-invocable: false
+---
+
+
+# Instrument Logging
+
+Zero-overhead structured logging instrumentation for Python functions.
+Adds entry/exit tracing with call-depth visualization that costs nothing when disabled.
+
+## When to Use
+
+- Debugging complex async call chains
+- Tracing function timing to find bottlenecks
+- Understanding unfamiliar codebases (temporary instrumentation)
+- Adding observability to pipeline stages
+
+**NOT for:** simple print debugging, production APM, already-logged code.
+
+## Core: Zero-Cost Decorator
+
+**The #1 rule: logging must never slow down production code.**
+
+`logger.isEnabledFor(level)` is an integer comparison (nanoseconds).
+When DEBUG is off, decorated functions run at native speed.
+
+```python
+import asyncio
+import functools
+import logging
+import re
+import time
+from contextvars import ContextVar
+
+_call_depth: ContextVar[int] = ContextVar("call_depth", default=0)
+
+_REDACT_RE = re.compile(
+    r"(password|token|secret|key|auth|credential|bearer|api.?key)",
+    re.IGNORECASE,
+)
+
+
+def logged(
+    level=logging.DEBUG,
+    log_args=False,
+    log_result=False,
+    slow_ms=None,
+    redact=True,
+    max_val_len=80,
+):
+    """Zero-cost function tracer with call-depth indentation.
+
+    Args:
+        level: Log level. Function is undecorated when level is disabled.
+        log_args: Capture function arguments (with auto-truncation).
+        log_result: Capture return value (with auto-truncation).
+        slow_ms: Emit WARNING if execution exceeds this threshold (ms).
+        redact: Auto-mask kwargs matching sensitive patterns.
+        max_val_len: Max characters for formatted values.
+    """
+
+    def decorator(func):
+        _logger = logging.getLogger(func.__module__)
+        _is_async = asyncio.iscoroutinefunction(func)
+        _name = func.__qualname__
+
+        @functools.wraps(func)
+        async def async_wrapper(*args, **kwargs):
+            if not _logger.isEnabledFor(level):
+                return await func(*args, **kwargs)
+            return await _trace_async(
+                _logger, func, _name, level, args, kwargs,
+                log_args, log_result, slow_ms, redact, max_val_len,
+            )
+
+        @functools.wraps(func)
+        def sync_wrapper(*args, **kwargs):
+            if not _logger.isEnabledFor(level):
+                return func(*args, **kwargs)
+            return _trace_sync(
+                _logger, func, _name, level, args, kwargs,
+                log_args, log_result, slow_ms, redact, max_val_len,
+            )
+
+        return async_wrapper if _is_async else sync_wrapper
+
+    return decorator
+```
+
+## Call Depth Visualization
+
+Nested calls indent with `| ` (pipe + space). Output becomes a visual tree:
+
+```
+14:23:01.456 DEBUG -> run_pipeline
+14:23:01.457 DEBUG | -> process_audio
+14:23:01.458 DEBUG | | -> transcribe_speech
+14:23:01.890 DEBUG | | <- transcribe_speech              432.1ms
+14:23:01.891 DEBUG | | -> generate_response
+14:23:02.340 WARN  | | !! generate_response SLOW         449ms
+14:23:02.341 DEBUG | -> synthesize_speech
+14:23:02.780 DEBUG | <- synthesize_speech                 439.2ms
+14:23:02.781 DEBUG <- run_pipeline                        1325.0ms
+```
+
+Implementation:
+
+```python
+async def _trace_async(logger, func, name, level, args, kwargs,
+                       log_args, log_result, slow_ms, redact, max_val_len):
+    depth = _call_depth.get()
+    indent = "| " * depth
+    _call_depth.set(depth + 1)
+
+    extra = _fmt_args(args, kwargs, redact, max_val_len) if log_args else {}
+    logger.log(level, "%s-> %s", indent, name, **extra)
+
+    t0 = time.perf_counter()
+    try:
+        result = await func(*args, **kwargs)
+        elapsed = (time.perf_counter() - t0) * 1000
+
+        if slow_ms and elapsed > slow_ms:
+            logger.warning("%s!! %s SLOW", indent, name, elapsed_ms=f"{elapsed:.0f}")
+        else:
+            rx = _fmt_result(result, max_val_len) if log_result else {}
+            logger.log(level, "%s<- %s", indent, name,
+                       elapsed_ms=_fmt_time(elapsed), **rx)
+        return result
+    except Exception as e:
+        elapsed = (time.perf_counter() - t0) * 1000
+        logger.error("%s!! %s FAILED", indent, name,
+                     error=str(e)[:200], elapsed_ms=f"{elapsed:.0f}")
+        raise
+    finally:
+        _call_depth.set(depth)
+```
+
+Sync version is identical but without `await`.
+
+## Value Formatting
+
+Truncate large values, redact secrets, show useful summaries:
+
+```python
+def _fmt_val(v, max_len=80):
+    if isinstance(v, str):
+        return f'"{v[:max_len]}..."' if len(v) > max_len else f'"{v}"'
+    if isinstance(v, bytes):
+        return f"<bytes len={len(v)}>"
+    if isinstance(v, (list, tuple)):
+        return f"<{type(v).__name__} len={len(v)}>"
+    if isinstance(v, dict):
+        keys = list(v.keys())[:5]
+        suffix = "..." if len(v) > 5 else ""
+        return f"<dict keys=[{', '.join(map(str, keys))}{suffix}]>"
+    r = repr(v)
+    return f"{r[:max_len]}..." if len(r) > max_len else r
+
+
+def _fmt_args(args, kwargs, redact, max_len):
+    out = {}
+    if args:
+        out["_args"] = f"({len(args)} positional)"
+    for k, v in kwargs.items():
+        if redact and _REDACT_RE.search(k):
+            out[k] = "***"
+        else:
+            out[k] = _fmt_val(v, max_len)
+    return out
+
+
+def _fmt_result(result, max_len):
+    return {"result": _fmt_val(result, max_len)}
+
+
+def _fmt_time(ms):
+    return f"{ms / 1000:.1f}s" if ms >= 1000 else f"{ms:.1f}ms"
+```
+
+## Slow-Path Detection
+
+Only emit warnings for functions exceeding their threshold.
+Normal-speed calls stay at DEBUG (invisible in production).
+
+```python
+@logged(slow_ms=500)        # External APIs
+async def call_api(url): ...
+
+@logged(slow_ms=100)        # DB queries
+async def query_db(sql): ...
+
+@logged(slow_ms=20)         # Cache lookups
+async def cache_get(key): ...
+```
+
+**Threshold guide:**
+
+| Layer | slow_ms | Rationale |
+|-------|---------|-----------|
+| External API | 500-2000 | Network latency expected |
+| DB queries | 100-500 | Index misses, locks |
+| Internal compute | 50-200 | CPU-bound work |
+| Cache operations | 10-50 | Should be near-instant |
+| Pipeline stages | 200-1000 | End-to-end per stage |
+
+## Sampling for Hot Paths
+
+For functions called thousands of times per second:
+
+```python
+import random
+
+def logged_sampled(rate=0.01, **kwargs):
+    """Log ~1% of calls. Zero-cost for skipped calls."""
+    def decorator(func):
+        traced = logged(**kwargs)(func)
+        is_async = asyncio.iscoroutinefunction(func)
+
+        @functools.wraps(func)
+        async def async_wrapper(*a, **kw):
+            if random.random() < rate:
+                return await traced(*a, **kw)
+            return await func(*a, **kw)
+
+        @functools.wraps(func)
+        def sync_wrapper(*a, **kw):
+            if random.random() < rate:
+                return traced(*a, **kw)
+            return func(*a, **kw)
+
+        return async_wrapper if is_async else sync_wrapper
+    return decorator
+```
+
+## Correlation ID (Optional)
+
+Thread a request ID through async boundaries:
+
+```python
+_request_id: ContextVar[str] = ContextVar("request_id", default="")
+
+def set_request_id(rid=None):
+    from uuid import uuid4
+    _request_id.set(rid or uuid4().hex[:8])
+
+# Include in trace output:
+logger.log(level, "%s-> %s", indent, name, req=_request_id.get(), **extra)
+```
+
+Use when concurrent requests share the same log stream.
+
+## Instrumentation Strategy
+
+When asked to "add logging to all functions":
+
+1. **Scope** -- identify which modules need tracing
+2. **Check existing** -- don't duplicate; enhance
+3. **Apply by layer:**
+   - Pipeline/orchestration: `@logged(log_args=True, slow_ms=1000)`
+   - External calls (API, DB): `@logged(log_args=True, slow_ms=500, log_result=True)`
+   - Internal business logic: `@logged()` (entry/exit only)
+   - Hot loops / high-frequency: `@logged_sampled(rate=0.01)` or skip
+4. **Import** -- keep `logged()` in one shared module
+5. **Verify** -- run with `LOG_LEVEL=DEBUG`, check tree output
+
+## Cleanup After Debugging
+
+```bash
+# Find all instrumented functions:
+grep -rn "@logged" src/
+
+# Safe to keep (zero noise in production):
+# - @logged(slow_ms=N)        -- silent until slow
+# - @logged()                  -- silent when DEBUG off
+
+# Remove after debugging:
+# - @logged(log_args=True, log_result=True)  -- verbose
+# - @logged_sampled(...)                      -- sampling overhead
+```
+
+## Common Mistakes
+
+| Mistake | Fix |
+|---------|-----|
+| Logging inside tight loops without sampling | Use `@logged_sampled` or skip |
+| Formatting args before level check | Level check is FIRST line in wrapper |
+| Logging entire request/response bodies | Use `max_val_len` truncation |
+| No redaction on auth functions | `redact=True` is default |
+| Leaving verbose logging after debug | grep `@logged` before merge |
+| String concatenation in log messages | Use structured kwargs: `logger.info("msg", k=v)` not `f"msg {k}"` |
+
+## Integration with Existing Logging
+
+If the project already uses structured logging (e.g. prot-style `StructuredLogger`):
+
+```python
+# The decorator works with any stdlib-compatible logger.
+# Just ensure get_logger() returns a logger that supports kwargs:
+_logger = get_logger(func.__module__)  # Instead of logging.getLogger()
+```
+
+The call-depth `ContextVar` works across all async tasks in the same context,
+including `asyncio.create_task()` children (they inherit parent context).
