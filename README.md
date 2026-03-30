@@ -66,7 +66,7 @@ Supporting: `implement-flow`, `review-anly`, `worktree-flow`, `finish-dev`
 | `session-handoff` | Session context wrap-up |
 | `skilldev-sys` | Skill creation & testing |
 
-## Agents (4)
+## Agents (8)
 
 | Agent | Description |
 |-------|-------------|
@@ -74,6 +74,10 @@ Supporting: `implement-flow`, `review-anly`, `worktree-flow`, `finish-dev`
 | `code-architect` | System design evaluation and structural trade-offs |
 | `code-explorer` | Deep codebase exploration and execution path tracing |
 | `silent-failure-hunter` | Finds bugs that don't throw errors |
+| `test-strategist` | Test design — edge cases, coverage gaps, test architecture |
+| `migration-planner` | Version upgrades and API migration planning |
+| `incident-investigator` | Error chain tracing for loud failures (complements silent-failure-hunter) |
+| `spec-validator` | Requirements compliance validation against specs/PRDs |
 
 ## Multi-distro Support
 
