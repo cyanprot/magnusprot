@@ -150,7 +150,13 @@ digraph process {
     "Quality approved?" -> "Mark task complete" [label="yes"];
     "Mark task complete" -> "More tasks?";
     "More tasks?" -> "Dispatch implement subagent (./implement-prompt.md)" [label="yes"];
-    "More tasks?" -> "Final code review" [label="no"];
+    "More tasks?" -> "Sprint has evaluation_method: playwright?" [label="no"];
+    "Sprint has evaluation_method: playwright?" -> "Dispatch evaluator agent (./evaluator-prompt.md)" [label="yes"];
+    "Sprint has evaluation_method: playwright?" -> "Final code review" [label="no"];
+    "Dispatch evaluator agent (./evaluator-prompt.md)" -> "Evaluator PASS?";
+    "Evaluator PASS?" -> "Final code review" [label="yes"];
+    "Evaluator PASS?" -> "Implement fixes evaluator bugs" [label="no, max 3 rounds"];
+    "Implement fixes evaluator bugs" -> "Dispatch evaluator agent (./evaluator-prompt.md)";
     "Final code review" -> "Use worktree completion";
 }
 ```
@@ -160,6 +166,44 @@ digraph process {
 - `./implement-prompt.md` - Dispatch implement subagent
 - `./spec-reviewer-prompt.md` - Dispatch spec compliance reviewer subagent
 - `./code-quality-reviewer-prompt.md` - Dispatch code quality reviewer subagent
+- `./evaluator-prompt.md` - Dispatch evaluator agent for live-app testing
+
+---
+
+## Evaluator Dispatch (Post-Sprint)
+
+After ALL tasks in a sprint pass spec and quality review, run live-app evaluation if the sprint contract calls for it.
+
+### When to Run
+
+Check the sprint contract's `evaluation_method` field:
+- `"playwright"` → dispatch evaluator agent
+- `"unit"` or `"manual"` → skip evaluator, proceed normally
+- Field missing → skip evaluator
+
+### Dispatch Process
+
+1. **Ensure dev server is running.** Ask the user for the URL if not known. Do NOT start a server yourself in subagent mode.
+2. **Dispatch `evaluator` agent** using `./evaluator-prompt.md` template:
+   - Paste the full sprint contract JSON (not a file path)
+   - Include the dev server URL
+   - Describe any pre-existing state (test accounts, seeded data, navigation path)
+3. **Read the verdict:**
+   - **PASS** → proceed to mark sprint complete, update campaign.json
+   - **PASS WITH WARNINGS** → log warnings, proceed (warnings go into campaign decisions_log)
+   - **FAIL** → route bug report back to implement subagent for fix
+
+### Retry on FAIL
+
+1. Implement subagent receives the evaluator's bug report and fixes the issues
+2. Re-run spec reviewer (quick pass) and quality reviewer
+3. Re-dispatch evaluator
+4. **Max 3 evaluator rounds.** After 3 FAILs, escalate to user with the full bug report:
+   - "Evaluator failed 3 times. Here's the latest bug report: [report]. Please review and advise."
+
+### Evaluator Scope
+
+The evaluator is a **black-box tester** — it uses only Playwright browser tools, never reads source code. This separation ensures the evaluation is genuine user-perspective testing, not code inspection.
 
 ---
 
@@ -207,3 +251,4 @@ digraph process {
 **Quality gates:**
 - **plancheck-flow** - Review plan before execution
 - **verify-anly** - Verify work before claiming completion
+- **evaluator** agent - Live-app Playwright testing (when `evaluation_method: "playwright"`)
