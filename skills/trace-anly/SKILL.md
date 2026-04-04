@@ -1,7 +1,7 @@
 ---
 name: trace-anly
 description: Use when adding function tracing — entry/exit logging, call depth visualization
-user-invocable: false
+user-invocable: true
 ---
 
 

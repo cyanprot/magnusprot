@@ -2,7 +2,7 @@
 name: docs-dev
 description: Use when generating or auditing project docs — README, LICENSE, .gitignore, etc.
 argument-hint: "[generate|audit] [--lang ko|en] [--include contributing]"
-user-invocable: false
+user-invocable: true
 ---
 
 ## Role

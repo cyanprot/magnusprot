@@ -1,7 +1,7 @@
 ---
 name: simplify-anly
 description: Use for codebase complexity audit — parallel analysis, verified refactoring plan
-user-invocable: false
+user-invocable: true
 ---
 
 

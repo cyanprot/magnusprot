@@ -1,7 +1,7 @@
 ---
 name: respond-anly
 description: Use when receiving code review feedback — technical verification, not performative agreement
-user-invocable: false
+user-invocable: true
 ---
 
 

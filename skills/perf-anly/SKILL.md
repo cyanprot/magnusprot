@@ -2,7 +2,7 @@
 name: perf-anly
 description: Use when analyzing code performance — identify bottlenecks and optimization targets
 argument-hint: "<file-or-function>"
-user-invocable: false
+user-invocable: true
 ---
 
 # /perf - Performance Analysis

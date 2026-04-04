@@ -1,7 +1,7 @@
 ---
 name: llmcheck-dev
 description: Use when checking LLM model settings across project
-user-invocable: false
+user-invocable: true
 ---
 
 # /model-check - LLM Model Settings Verification

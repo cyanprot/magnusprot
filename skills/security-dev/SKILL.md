@@ -2,7 +2,7 @@
 name: security-dev
 description: Use when scanning for security vulnerabilities
 argument-hint: "[path]"
-user-invocable: false
+user-invocable: true
 ---
 
 # /security - Security Vulnerability Scan

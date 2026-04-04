@@ -1,7 +1,7 @@
 ---
 name: healthcheck-dev
 description: Use for project health verification — build, runtime, docs checks in parallel
-user-invocable: false
+user-invocable: true
 ---
 
 

@@ -2,7 +2,7 @@
 name: deps-dev
 description: Use when checking dependency status and running security audit
 argument-hint: "[--audit|--outdated|--tree]"
-user-invocable: false
+user-invocable: true
 ---
 
 # /deps - Dependency Management

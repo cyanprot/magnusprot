@@ -1,7 +1,7 @@
 ---
 name: worktree-flow
 description: Use when starting isolated feature work or completing a development branch — git worktree lifecycle
-user-invocable: false
+user-invocable: true
 ---
 
 
