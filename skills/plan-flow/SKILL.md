@@ -94,9 +94,56 @@ git commit -m "feat: add specific feature"
 - Reference relevant skills with @ syntax
 - DRY, YAGNI, TDD, frequent commits
 
+## Campaign & Sprint Contract Generation
+
+After the plan is saved, generate campaign state and sprint contracts for multi-session persistence.
+
+### Campaign File
+
+Create `.claude/campaign.json` in the project root (create `.claude/` dir if needed):
+
+```json
+{
+  "project": "<project-name>",
+  "started": "<ISO 8601 now>",
+  "current_phase": "plan",
+  "current_sprint": 1,
+  "total_sprints": <number of task groups>,
+  "completed_sprints": [],
+  "decisions_log": [],
+  "continuation_prompt": "Plan created for <feature>. <total_sprints> sprints. Ready to execute with execute-flow."
+}
+```
+
+### Sprint Contracts
+
+For each logical sprint (task group), create `.claude/sprint-contracts/<project>-<N>.json`:
+
+```json
+{
+  "sprint_id": "<project>-<N>",
+  "feature": "<what this sprint builds>",
+  "deliverables": ["<concrete outputs>"],
+  "success_criteria": ["<measurable criteria — all must be met>"],
+  "testable_behaviors": ["<user-observable behaviors to verify>"],
+  "scope_boundaries": ["<what is NOT in scope>"],
+  "evaluation_method": "unit"
+}
+```
+
+**Rules:**
+- One contract per sprint (group of related tasks)
+- `success_criteria` must be objectively verifiable (not "works well")
+- `scope_boundaries` prevent scope creep during execution
+- Sprint grouping: related tasks that form a coherent deliverable (typically 2-5 tasks per sprint)
+
+**Schema references:** `~/.claude/schemas/campaign.schema.json`, `~/.claude/schemas/sprint-contract.schema.json`
+
+---
+
 ## Execution Handoff
 
-After saving the plan, offer execution choice:
+After saving the plan and generating campaign/contracts, offer execution choice:
 
 **"Plan complete and saved to `docs/plans/<filename>.md`. Two execution options:**
 

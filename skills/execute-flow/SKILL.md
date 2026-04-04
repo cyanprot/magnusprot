@@ -18,6 +18,31 @@ Two execution modes for implementation plans:
 
 ## Common Prerequisites
 
+### Step 0: Campaign Resume Check
+
+Before anything else, check for an active campaign:
+
+1. Read `.claude/campaign.json` in the project root
+2. **If exists and `current_phase` is not `"complete"`:**
+   - Load `continuation_prompt` — display it to orient context
+   - Read the current sprint contract from `.claude/sprint-contracts/<project>-<current_sprint>.json`
+   - Set `current_phase` to `"execute"` and save
+   - Announce: "Resuming campaign: <project>, sprint <N>/<total>. <continuation_prompt>"
+   - Skip to the current sprint's tasks in the plan
+3. **If not found or `current_phase` is `"complete"`:** proceed normally (no campaign)
+
+### After Each Sprint Completes
+
+Update `.claude/campaign.json`:
+- Append sprint number to `completed_sprints`
+- Increment `current_sprint`
+- Update `continuation_prompt` with current state (what's done, what's next, server port, etc.)
+- Log any architectural decisions to `decisions_log`
+
+### On All Sprints Complete
+
+Set `current_phase` to `"complete"` in `campaign.json`.
+
 ### Before Starting Either Mode
 
 1. Set up isolated workspace using `worktree-flow` skill

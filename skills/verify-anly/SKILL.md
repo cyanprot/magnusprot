@@ -7,9 +7,10 @@ description: Use before claiming work is complete — plan compliance and execut
 
 ## Overview
 
-Two verification gates before claiming completion:
+Three verification gates before claiming completion:
 1. **Gate 1 (Plan Compliance):** Did you build what was asked?
 2. **Gate 2 (Execution Evidence):** Did tests/build actually pass?
+3. **Gate 3 (Sprint Contract):** Does it meet the pre-negotiated contract? (skipped if no contract exists)
 
 **Core principle:** Evidence before claims, always. An implement's report is a claim, not evidence.
 
@@ -182,6 +183,60 @@ NOT: "Tests pass, phase complete"
 
 ---
 
+## Gate 3: Sprint Contract Compliance
+
+Validates that implementation meets the pre-negotiated sprint contract. Only runs if a sprint contract exists.
+
+### When to Run Gate 3
+
+- After Gate 2 passes
+- When a sprint contract exists at `.claude/sprint-contracts/<sprint_id>.json`
+- If no contract file found → skip Gate 3 (backwards compatible)
+
+### The Verification Process
+
+1. Read the sprint contract JSON
+2. Dispatch **spec-validator** agent with:
+   - The sprint contract as the spec (pass `success_criteria`, `deliverables`, `testable_behaviors`)
+   - The implementation files to validate against
+3. Evaluate spec-validator output:
+   - All `success_criteria` items must be **IMPLEMENTED**
+   - All `deliverables` must be **IMPLEMENTED**
+   - No **MISSING** items allowed for PASS
+   - **PARTIAL** items → FAIL (must be fully met)
+   - **OVER-IMPLEMENTED** items → flag as warning (possible scope creep vs `scope_boundaries`)
+4. Check `scope_boundaries` — any work done outside declared scope is a violation
+
+### Gate 3 Output Format
+
+```markdown
+## Sprint Contract Verification: [sprint_id]
+
+**Contract:** [feature description]
+**Deliverables:** N total, N implemented
+**Success Criteria:** N total, N met
+
+| # | Criterion | Status | Evidence |
+|---|-----------|--------|----------|
+| 1 | [criterion] | IMPLEMENTED / MISSING / PARTIAL | [file:line or test output] |
+
+### Scope Check
+- Scope violations: [list or "none"]
+- Over-implementation warnings: [list or "none"]
+
+### Verdict
+PASS / FAIL (N criteria unmet, N scope violations)
+```
+
+### Gate 3 PASS Requirements
+
+- All `success_criteria`: IMPLEMENTED
+- All `deliverables`: IMPLEMENTED
+- Zero scope violations
+- Over-implementation: warning only (does not block PASS)
+
+---
+
 ## Red Flags - STOP
 
 - Using "should", "probably", "seems to"
@@ -230,5 +285,6 @@ plancheck-flow -> execute plan -> verify-anly -> commit/merge
 
 Gate 1: Read the code. Check the plan. Count the steps.
 Gate 2: Run the command. Read the output. THEN claim the result.
+Gate 3: Check the contract. Every criterion met. No scope violations.
 
 This is non-negotiable.
