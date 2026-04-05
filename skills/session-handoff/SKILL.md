@@ -1,6 +1,6 @@
 ---
 name: session-handoff
-description: Use when ending a session, wrapping up work, or user says "정리해줘", "마무리", "wrap up", "save progress". Also use when a significant work block completes and progress should be persisted before context is lost.
+description: Use when ending a session — save progress, update memory, summarize
 ---
 
 # Session Handoff

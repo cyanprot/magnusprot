@@ -28,8 +28,7 @@ claude --plugin-dir ~/magnusprot
 
 ```mermaid
 graph TD
-    A[skills-sys] --> B[brainstorm-flow]
-    B --> C[plan-flow]
+    B[brainstorm-flow] --> C[plan-flow]
     C --> D[plancheck-flow]
     D --> E[execute-flow]
     E --> F[verify-anly]
@@ -55,63 +54,66 @@ graph TD
 
 ---
 
-## Skills (28)
+## Skills (23)
 
 Skills are namespaced as `/magnusprot:<skill-name>` when installed as a plugin.
 
+### Model Tiers
+
+| Tier | Model | Skills |
+|------|-------|--------|
+| **Light** | `haiku` | clean-dev, commit-dev, deps-dev, docs-dev, init-dev |
+| **Medium** | `sonnet` | explain-anly, healthcheck-dev, perf-anly, respond-anly, research-sys, security-dev, worktree-flow |
+| **Heavy** | inherit | brainstorm-flow, debug-anly, execute-flow, implement-flow, plan-flow, plancheck-flow, review-anly, session-handoff, simplify-anly, skilldev-sys, verify-anly |
+
 ### Core Workflow Chain
 
-`skills-sys` &rarr; `brainstorm-flow` &rarr; `plan-flow` &rarr; `plancheck-flow` &rarr; `execute-flow` &rarr; `verify-anly`
+`brainstorm-flow` &rarr; `plan-flow` &rarr; `plancheck-flow` &rarr; `execute-flow` &rarr; `verify-anly`
 
-Supporting: `implement-flow`, `review-anly`, `worktree-flow`, `finish-dev`
+Supporting: `implement-flow`, `review-anly`, `worktree-flow`
 
 ### Analysis & Review
 
 | Skill | Description |
 |-------|-------------|
-| `review-anly` | Multi-perspective code review (7-perspective framework) |
-| `explain-anly` | Code structure explanation |
-| `simplify-anly` | Complexity audit (YAGNI, DRY, coupling) |
-| `perf-anly` | Performance analysis |
-| `trace-anly` | Execution path tracing |
-| `respond-anly` | Code review feedback response — technical verification |
-| `verify-anly` | Plan compliance and execution evidence gate |
+| `review-anly` | 7-perspective code quality analysis |
+| `explain-anly` | Code structure, functions, and call graph explanation |
+| `simplify-anly` | Complexity audit — dead code, DRY, YAGNI, coupling |
+| `perf-anly` | Performance analysis — bottlenecks, complexity, N+1 queries |
+| `respond-anly` | Code review feedback response — verify before agreeing |
+| `verify-anly` | Plan compliance + execution evidence gate |
 
 ### Development
 
 | Skill | Description |
 |-------|-------------|
-| `init-dev` | Project context loading and environment diagnosis |
-| `commit-dev` | Conventional Commits format |
+| `init-dev` | Project context loading — scan configs, deps, git state |
+| `commit-dev` | Auto-format as Conventional Commits |
 | `clean-dev` | System cleanup (multi-distro: apt/dnf) |
-| `finish-dev` | Branch completion (delegates to worktree-flow Phase 2) |
 | `deps-dev` | Dependency status and security audit |
 | `docs-dev` | Documentation generation and audit |
-| `security-dev` | Security vulnerability scanning |
-| `healthcheck-dev` | Project health verification (build, runtime, docs) |
-| `llmcheck-dev` | LLM model settings validation |
+| `security-dev` | Security vulnerability scanning — secrets, injection, unsafe APIs |
+| `healthcheck-dev` | Project health verification — parallel build, runtime, docs checks |
 
 ### Workflow
 
 | Skill | Description |
 |-------|-------------|
-| `brainstorm-flow` | Requirements exploration and design shaping |
-| `plan-flow` | Step-by-step TDD plan + campaign/sprint contracts |
-| `plancheck-flow` | Plan review gate — catch over-engineering and scope creep |
-| `execute-flow` | Plan execution — batch or subagent mode with two-stage review |
-| `implement-flow` | TDD-first feature implementation |
-| `worktree-flow` | Git worktree lifecycle (isolated feature work) |
+| `brainstorm-flow` | Requirements exploration — shape design before implementation |
+| `plan-flow` | TDD plan + campaign/sprint contracts |
+| `plancheck-flow` | Plan review — catch over-engineering and scope creep |
+| `execute-flow` | Plan execution — batch or subagent mode with campaign tracking |
+| `implement-flow` | TDD-first implementation — strict red-green-refactor |
+| `worktree-flow` | Git worktree lifecycle — setup, develop, merge/PR |
 
 ### System & Utilities
 
 | Skill | Description |
 |-------|-------------|
 | `debug-anly` | Root cause analysis before fixing |
-| `parallel-sys` | Parallel agent dispatch for independent tasks |
 | `research-sys` | API/library investigation with structured findings |
-| `session-handoff` | Session context wrap-up and persistence |
-| `skilldev-sys` | Skill creation, editing, and testing |
-| `skills-sys` | Skill discovery and usage guidance |
+| `session-handoff` | Session wrap-up — save progress, update memory, summarize |
+| `skilldev-sys` | Skill creation and testing — TDD skill development |
 
 ---
 

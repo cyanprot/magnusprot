@@ -1,6 +1,7 @@
 ---
 name: commit-dev
-description: Use when committing — Conventional Commits format
+description: Use when committing — auto-format as Conventional Commits
+model: haiku
 user-invocable: true
 ---
 

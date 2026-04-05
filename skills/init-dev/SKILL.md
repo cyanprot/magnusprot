@@ -1,6 +1,7 @@
 ---
 name: init-dev
-description: Use when loading project context and diagnosing environment
+description: Use when loading project context — scan configs, deps, git state
+model: haiku
 user-invocable: true
 ---
 

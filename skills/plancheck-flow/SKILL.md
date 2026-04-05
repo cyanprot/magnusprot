@@ -1,6 +1,6 @@
 ---
 name: plancheck-flow
-description: Use before executing an implementation plan — catch over-engineering and scope creep
+description: Use when reviewing a plan — catch over-engineering and scope creep
 ---
 
 # Reviewing Plans

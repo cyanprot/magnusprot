@@ -1,6 +1,6 @@
 ---
 name: simplify-anly
-description: Use for codebase complexity audit — parallel analysis, verified refactoring plan
+description: Use when auditing complexity — parallel dead code, DRY, YAGNI analysis
 user-invocable: true
 ---
 
@@ -13,7 +13,7 @@ Scan a project for over-engineered, unnecessarily complex, or AI-agent-generated
 
 **Core principle:** Dispatch 5 perspective-specific workers in parallel, synthesize findings, produce a `plan-flow`-compatible plan verified by `plancheck-flow`.
 
-**REQUIRES:** `parallel-sys` pattern, `plancheck-flow` for verification
+**REQUIRES:** `plancheck-flow` for verification
 
 ## When to Use
 
@@ -125,7 +125,7 @@ Build project context BEFORE dispatching workers. Workers need this as input.
 
 ## Phase 2: Dispatch 5 Workers in Parallel
 
-Use `parallel-sys` pattern. Each worker gets the architecture snapshot + its specific analysis template.
+Dispatch workers in parallel. Each worker gets the architecture snapshot + its specific analysis template.
 
 | Worker | Template | Perspective |
 |--------|----------|-------------|

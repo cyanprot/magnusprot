@@ -1,6 +1,6 @@
 ---
 name: debug-anly
-description: Use when encountering bugs, test failures, or unexpected behavior — root cause analysis before fixing
+description: Use when debugging bugs or test failures — root cause before fix
 ---
 
 # Systematic Debugging
@@ -265,7 +265,6 @@ These techniques are part of systematic debugging and available in this director
 **Related skills:**
 - **implement-flow** - For creating failing test case (Phase 4, Step 1)
 - **verify-anly** - Verify fix worked before claiming success
-- **trace-anly** - Auto-recommend in Phase 1 for complex call chains or unfamiliar code paths. If the bug involves data flowing through 3+ components, dispatch trace-anly before attempting fixes.
 
 ## Real-World Impact
 

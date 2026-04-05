@@ -1,6 +1,6 @@
 ---
 name: execute-flow
-description: Use when executing a written implementation plan — batch or subagent mode
+description: Use when executing a plan — batch or subagent mode with campaign tracking
 ---
 
 # Plan Execution

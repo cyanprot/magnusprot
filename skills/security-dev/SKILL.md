@@ -1,6 +1,7 @@
 ---
 name: security-dev
-description: Use when scanning for security vulnerabilities
+description: Use when scanning for security vulns — secrets, injection, unsafe APIs
+model: sonnet
 argument-hint: "[path]"
 user-invocable: true
 ---

@@ -1,6 +1,7 @@
 ---
 name: research-sys
-description: Use when investigating APIs, evaluating libraries, or comparing approaches — structured findings with evidence
+description: Use when researching APIs, libraries, or approaches — structured findings
+model: sonnet
 user-invocable: true
 argument-hint: "[research question or topic]"
 ---

@@ -1,6 +1,6 @@
 ---
 name: verify-anly
-description: Use before claiming work is complete — plan compliance and execution evidence gate
+description: Use when verifying completion — plan compliance + evidence gate
 ---
 
 # Verifying Work

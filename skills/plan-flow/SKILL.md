@@ -1,6 +1,6 @@
 ---
 name: plan-flow
-description: Use when you have spec or requirements for a multi-step task — step-by-step TDD plan
+description: Use when planning multi-step tasks — generates TDD plan + campaign state
 ---
 
 # Writing Plans

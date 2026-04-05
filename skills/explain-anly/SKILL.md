@@ -1,6 +1,7 @@
 ---
 name: explain-anly
-description: Use when you need to understand code structure, functions, or files
+description: Use when explaining code structure, functions, or call graphs
+model: sonnet
 user-invocable: true
 argument-hint: "<file-or-symbol>"
 ---

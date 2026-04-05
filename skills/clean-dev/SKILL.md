@@ -1,6 +1,7 @@
 ---
 name: clean-dev
-description: Use when cleaning up caches, Docker, logs, stale artifacts, auditing packages, and checking RAM
+description: Use when cleaning caches, Docker, logs, or auditing disk/RAM usage
+model: haiku
 user-invocable: true
 argument-hint: "[--dev|--system|--deep|--nuke|--mem|--audit|--dry-run|--category=X|path|--all]"
 ---

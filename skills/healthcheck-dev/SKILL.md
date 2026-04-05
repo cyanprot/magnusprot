@@ -1,6 +1,7 @@
 ---
 name: healthcheck-dev
-description: Use for project health verification — build, runtime, docs checks in parallel
+description: Use when verifying project health — parallel build, runtime, and docs checks
+model: sonnet
 user-invocable: true
 ---
 
@@ -9,7 +10,7 @@ user-invocable: true
 
 Parallel quality verification: **build**, **runtime**, **docs**. Zero false positives is priority #1.
 
-**REQUIRES:** parallel-sys
+**REQUIRES:** none
 
 ## Step 1: Auto-Detect Project
 

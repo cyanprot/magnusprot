@@ -1,6 +1,7 @@
 ---
 name: deps-dev
-description: Use when checking dependency status and running security audit
+description: Use when checking outdated deps or running security audit
+model: haiku
 argument-hint: "[--audit|--outdated|--tree]"
 user-invocable: true
 ---

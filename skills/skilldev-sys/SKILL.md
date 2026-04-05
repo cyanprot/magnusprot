@@ -1,6 +1,6 @@
 ---
 name: skilldev-sys
-description: Use when creating, editing, or verifying skills before deployment
+description: Use when building or testing new skills — TDD skill development
 ---
 
 # Writing Skills
@@ -267,7 +267,7 @@ wc -w skills/path/SKILL.md
 
 **Name by what you DO or core insight:**
 - `condition-based-waiting` > `async-test-helpers`
-- `skills-sys` not `skill-usage`
+- `research-sys` not `api-lookup`
 - `flatten-with-flags` > `data-structure-refactoring`
 - `root-cause-tracing` > `debugging-techniques`
 

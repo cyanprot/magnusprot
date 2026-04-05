@@ -1,6 +1,6 @@
 ---
 name: review-anly
-description: Use when completing tasks or before merging — multi-perspective code quality review
+description: Use when reviewing code — 7-perspective quality analysis
 user-invocable: true
 argument-hint: "[file paths or git diff range]"
 ---

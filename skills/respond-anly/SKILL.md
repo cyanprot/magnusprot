@@ -1,6 +1,7 @@
 ---
 name: respond-anly
-description: Use when receiving code review feedback — technical verification, not performative agreement
+description: Use when responding to review feedback — verify before agreeing
+model: sonnet
 user-invocable: true
 ---
 

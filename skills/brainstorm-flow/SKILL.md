@@ -1,6 +1,6 @@
 ---
 name: brainstorm-flow
-description: Use before creating features or modifying behavior — explore requirements and shape the design
+description: Use when exploring requirements — shape design before implementation
 ---
 
 # Brainstorming Ideas Into Designs

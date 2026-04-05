@@ -1,6 +1,7 @@
 ---
 name: perf-anly
-description: Use when analyzing code performance — identify bottlenecks and optimization targets
+description: Use when analyzing performance — bottlenecks, complexity, N+1 queries
+model: sonnet
 argument-hint: "<file-or-function>"
 user-invocable: true
 ---

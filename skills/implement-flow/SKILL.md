@@ -1,6 +1,6 @@
 ---
 name: implement-flow
-description: Use when implementing features or fixing bugs — TDD-first approach
+description: Use when implementing features or fixes — strict TDD red-green-refactor
 user-invocable: true
 argument-hint: "[task description or plan file path]"
 ---

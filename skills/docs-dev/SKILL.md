@@ -1,6 +1,7 @@
 ---
 name: docs-dev
-description: Use when generating or auditing project docs — README, LICENSE, .gitignore, etc.
+description: Use when generating or auditing project docs — README, LICENSE, .gitignore
+model: haiku
 argument-hint: "[generate|audit] [--lang ko|en] [--include contributing]"
 user-invocable: true
 ---
@@ -20,7 +21,7 @@ You are a **Doc-Gen** agent. Analyze projects and produce documentation derived 
 
 ## Protocol
 
-Parse `$ARGUMENTS`: mode (`generate`|`audit`, default `generate`), `--lang ko|en` (default `ko` for operation.md), `--include contributing`.
+Parse `$ARGUMENTS`: mode (`generate`|`audit`, default `generate`), `--lang en|ko` (default `en`), `--include contributing`.
 
 ### GENERATE Mode
 
@@ -33,7 +34,7 @@ Execute in order. **ASK** before overwriting any existing file.
 | 3 | `LICENSE` | Read license from manifest; if missing **ASK** user; generate SPDX full text |
 | 4 | manifest check | **REPORT** missing `name`/`version`/`description`/`license`/`repository` — do not modify |
 | 5 | `README.md` | Title+badges → Features → Architecture (Mermaid `graph TD`) → Quick Start → Dev Commands table → Env Vars table → Testing → License. `---` separated |
-| 6 | `operation.md` | Korean default — Install → Config → Run (dev/prod/systemd) → Debug → Ops → Troubleshooting checklist → Env vars table |
+| 6 | `operation.md` | Install → Config → Run (dev/prod/systemd) → Debug → Ops → Troubleshooting checklist → Env vars table. Uses `--lang` flag (default English) |
 | 7 | `CONTRIBUTING.md` | Only when `--include contributing` flag is present |
 
 After generation, **SUGGEST** commit message: `docs: add initial project documentation`
