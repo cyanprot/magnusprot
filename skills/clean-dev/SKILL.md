@@ -57,8 +57,20 @@ Flags are combinable: `/clean --dev --dry-run`, `/clean --mem --audit`
 3. Neither -> TARGET=current working directory
 
 ## Exclusion Patterns (applied to ALL find commands)
+```bash
+# Use array syntax — string form causes quotes to become literals in find
+EXCLUDE=(-not -path "*/site-packages/*" -not -path "*/.venv/*" -not -path "*/venv/*" -not -path "*/env/*" -not -path "*/.git/*" -not -path "*/flatpak/runtime/*")
+# Always expand as "${EXCLUDE[@]}" — never bare "${EXCLUDE[@]}"
 ```
-EXCLUDE='-not -path "*/site-packages/*" -not -path "*/.venv/*" -not -path "*/venv/*" -not -path "*/env/*" -not -path "*/.git/*"'
+
+## Size Calculation Rule (MANDATORY)
+Always use `xargs -r` when piping find into du. Without `-r`, empty find output causes
+xargs to run `du .` on the current directory, reporting a wildly wrong size.
+```bash
+# Correct
+find TARGET ... "${EXCLUDE[@]}" 2>/dev/null | xargs -r du -sh --total 2>/dev/null | tail -1
+# Wrong — omitting -r gives bogus size when nothing is found
+find TARGET ... | xargs du -sh --total | tail -1
 ```
 
 ## Safety Rules (MANDATORY)
@@ -137,18 +149,18 @@ Before/after comparison with freed space.
 ### Python (if detected)
 ```bash
 # Scan
-find TARGET -type d -name "__pycache__" $EXCLUDE 2>/dev/null | wc -l
-find TARGET \( -name "*.pyc" -o -name "*.pyo" \) $EXCLUDE 2>/dev/null | wc -l
-find TARGET -type d \( -name ".pytest_cache" -o -name ".mypy_cache" -o -name ".ruff_cache" -o -name ".tox" \) $EXCLUDE 2>/dev/null
-find TARGET -type f -name ".coverage" $EXCLUDE 2>/dev/null
-find TARGET -type d \( -name "htmlcov" -o -name "*.egg-info" \) $EXCLUDE 2>/dev/null
+find TARGET -type d -name "__pycache__" "${EXCLUDE[@]}" 2>/dev/null | wc -l
+find TARGET \( -name "*.pyc" -o -name "*.pyo" \) "${EXCLUDE[@]}" 2>/dev/null | wc -l
+find TARGET -type d \( -name ".pytest_cache" -o -name ".mypy_cache" -o -name ".ruff_cache" -o -name ".tox" \) "${EXCLUDE[@]}" 2>/dev/null
+find TARGET -type f -name ".coverage" "${EXCLUDE[@]}" 2>/dev/null
+find TARGET -type d \( -name "htmlcov" -o -name "*.egg-info" \) "${EXCLUDE[@]}" 2>/dev/null
 
 # Delete
-find TARGET -type d -name "__pycache__" $EXCLUDE -exec rm -rf {} + 2>/dev/null
-find TARGET \( -name "*.pyc" -o -name "*.pyo" \) $EXCLUDE -delete 2>/dev/null
-find TARGET -type d \( -name ".pytest_cache" -o -name ".mypy_cache" -o -name ".ruff_cache" -o -name ".tox" \) $EXCLUDE -exec rm -rf {} + 2>/dev/null
-find TARGET -type f -name ".coverage" $EXCLUDE -delete 2>/dev/null
-find TARGET -type d \( -name "htmlcov" -o -name "*.egg-info" \) $EXCLUDE -exec rm -rf {} + 2>/dev/null
+find TARGET -type d -name "__pycache__" "${EXCLUDE[@]}" -exec rm -rf {} + 2>/dev/null
+find TARGET \( -name "*.pyc" -o -name "*.pyo" \) "${EXCLUDE[@]}" -delete 2>/dev/null
+find TARGET -type d \( -name ".pytest_cache" -o -name ".mypy_cache" -o -name ".ruff_cache" -o -name ".tox" \) "${EXCLUDE[@]}" -exec rm -rf {} + 2>/dev/null
+find TARGET -type f -name ".coverage" "${EXCLUDE[@]}" -delete 2>/dev/null
+find TARGET -type d \( -name "htmlcov" -o -name "*.egg-info" \) "${EXCLUDE[@]}" -exec rm -rf {} + 2>/dev/null
 ```
 
 ### Node.js (if detected)
@@ -156,12 +168,12 @@ find TARGET -type d \( -name "htmlcov" -o -name "*.egg-info" \) $EXCLUDE -exec r
 # Scan
 find TARGET -type d -path "*/node_modules/.cache" 2>/dev/null
 find TARGET -type d -path "*/node_modules/.vitest" 2>/dev/null
-find TARGET -type d \( -name ".turbo" -o -name ".next" -o -name ".nuxt" -o -name ".svelte-kit" \) $EXCLUDE 2>/dev/null
+find TARGET -type d \( -name ".turbo" -o -name ".next" -o -name ".nuxt" -o -name ".svelte-kit" \) "${EXCLUDE[@]}" 2>/dev/null
 
 # Delete
 find TARGET -type d -path "*/node_modules/.cache" -exec rm -rf {} + 2>/dev/null
 find TARGET -type d -path "*/node_modules/.vitest" -exec rm -rf {} + 2>/dev/null
-find TARGET -type d \( -name ".turbo" -o -name ".next" -o -name ".nuxt" -o -name ".svelte-kit" \) $EXCLUDE -exec rm -rf {} + 2>/dev/null
+find TARGET -type d \( -name ".turbo" -o -name ".next" -o -name ".nuxt" -o -name ".svelte-kit" \) "${EXCLUDE[@]}" -exec rm -rf {} + 2>/dev/null
 ```
 
 ### Rust (if detected)
@@ -186,18 +198,18 @@ find TARGET -type d -name "__debug_bin*" -exec rm -rf {} + 2>/dev/null
 
 ### Gradle (if detected)
 ```bash
-find TARGET -type d -name "build" -not -path "*/node_modules/*" -not -path "*/.git/*" $EXCLUDE -exec rm -rf {} + 2>/dev/null
-find TARGET -type d -name ".gradle" $EXCLUDE -exec rm -rf {} + 2>/dev/null
+find TARGET -type d -name "build" -not -path "*/node_modules/*" -not -path "*/.git/*" "${EXCLUDE[@]}" -exec rm -rf {} + 2>/dev/null
+find TARGET -type d -name ".gradle" "${EXCLUDE[@]}" -exec rm -rf {} + 2>/dev/null
 ```
 
 ### Maven (if detected)
 ```bash
-find TARGET -type d -name "target" -not -path "*/node_modules/*" -not -path "*/rust/*" $EXCLUDE -exec rm -rf {} + 2>/dev/null
+find TARGET -type d -name "target" -not -path "*/node_modules/*" -not -path "*/rust/*" "${EXCLUDE[@]}" -exec rm -rf {} + 2>/dev/null
 ```
 
 ### General Junk (always)
 ```bash
-find TARGET \( -name ".DS_Store" -o -name "Thumbs.db" -o -name "*.swp" -o -name "*.swo" -o -name "*~" -o -name "#*#" \) $EXCLUDE -delete 2>/dev/null
+find TARGET \( -name ".DS_Store" -o -name "Thumbs.db" -o -name "*.swp" -o -name "*.swo" -o -name "*~" -o -name "#*#" \) "${EXCLUDE[@]}" -delete 2>/dev/null
 ```
 
 ---
@@ -371,20 +383,20 @@ du -sh ~/.cache/huggingface/transformers 2>/dev/null || true
 ### Scan
 ```bash
 echo "=== Log files (30+ days old) ==="
-find TARGET -name "*.log" -mtime +30 $EXCLUDE 2>/dev/null | wc -l
+find TARGET -name "*.log" -mtime +30 "${EXCLUDE[@]}" 2>/dev/null | wc -l
 
 echo "=== Backup files ==="
-find TARGET \( -name "*.bak" -o -name "*.backup" -o -name "*.orig" \) $EXCLUDE 2>/dev/null | wc -l
+find TARGET \( -name "*.bak" -o -name "*.backup" -o -name "*.orig" \) "${EXCLUDE[@]}" 2>/dev/null | wc -l
 
 echo "=== Core dumps (actual dumps only, not core.js/core.ts) ==="
-find TARGET -type f \( -name "core" -o -regex ".*/core\.[0-9]+" \) -not -name "*.js" -not -name "*.ts" -not -name "*.json" -not -name "*.d.ts" -not -name "*.map" $EXCLUDE 2>/dev/null | wc -l
+find TARGET -type f \( -name "core" -o -regex ".*/core\.[0-9]+" \) -not -name "*.js" -not -name "*.ts" -not -name "*.json" -not -name "*.d.ts" -not -name "*.map" "${EXCLUDE[@]}" 2>/dev/null | wc -l
 ```
 
 ### Delete
 ```bash
-find TARGET -name "*.log" -mtime +30 $EXCLUDE -delete 2>/dev/null
-find TARGET \( -name "*.bak" -o -name "*.backup" -o -name "*.orig" \) $EXCLUDE -delete 2>/dev/null
-find TARGET -type f \( -name "core" -o -regex ".*/core\.[0-9]+" \) -not -name "*.js" -not -name "*.ts" -not -name "*.json" -not -name "*.d.ts" -not -name "*.map" $EXCLUDE -delete 2>/dev/null
+find TARGET -name "*.log" -mtime +30 "${EXCLUDE[@]}" -delete 2>/dev/null
+find TARGET \( -name "*.bak" -o -name "*.backup" -o -name "*.orig" \) "${EXCLUDE[@]}" -delete 2>/dev/null
+find TARGET -type f \( -name "core" -o -regex ".*/core\.[0-9]+" \) -not -name "*.js" -not -name "*.ts" -not -name "*.json" -not -name "*.d.ts" -not -name "*.map" "${EXCLUDE[@]}" -delete 2>/dev/null
 ```
 
 ---
