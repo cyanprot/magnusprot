@@ -59,7 +59,7 @@ Flags are combinable: `/clean --dev --dry-run`, `/clean --mem --audit`
 ## Exclusion Patterns (applied to ALL find commands)
 ```bash
 # Use array syntax — string form causes quotes to become literals in find
-EXCLUDE=(-not -path "*/site-packages/*" -not -path "*/.venv/*" -not -path "*/venv/*" -not -path "*/env/*" -not -path "*/.git/*" -not -path "*/flatpak/runtime/*")
+EXCLUDE=(-not -path "*/site-packages/*" -not -path "*/.venv/*" -not -path "*/venv/*" -not -path "*/env/*" -not -path "*/.git/*" -not -path "*/flatpak/runtime/*" -not -path "*/GoogleDrive/*" -not -path "$HOME/GoogleDrive/*" -not -path "*/Documents/*" -not -path "*/Pictures/*")
 # Always expand as "${EXCLUDE[@]}" — never bare "${EXCLUDE[@]}"
 ```
 
@@ -85,6 +85,8 @@ find TARGET ... | xargs du -sh --total | tail -1
 - `libllvm*` packages — mesa/GPU stack dependency
 - `xserver-xorg-video-*`, `mesa-*` — display server dependencies
 - flatpak NVIDIA GL runtime (`org.freedesktop.Platform.GL.nvidia-*`)
+- `~/GoogleDrive/` — cloud sync mirror, cleanup MUST skip entirely (user data, not cache)
+- `~/Documents/`, `~/Desktop/`, `~/Pictures/` — user data zones, never scan or delete inside them
 
 ### Confirm Required (ask user before deleting)
 - Docker volumes (data loss risk)
@@ -122,6 +124,13 @@ Check at TARGET:
 ### Step 3: Scan Phase (ALWAYS runs first)
 Run scan commands for all applicable layers IN PARALLEL. Collect category, item count, size, risk.
 ```bash
+# Protected user directories — abort if TARGET is inside one
+case "$TARGET" in
+    "$HOME/GoogleDrive"*|"$HOME/Documents"*|"$HOME/Desktop"*|"$HOME/Pictures"*)
+        echo "ERROR: TARGET '$TARGET' is a protected user directory. Aborting."
+        exit 1 ;;
+esac
+
 echo "=== Disk usage before ==="
 du -sh TARGET 2>/dev/null
 df -h TARGET 2>/dev/null | tail -1
