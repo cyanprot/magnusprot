@@ -22,17 +22,35 @@ Before starting, detect the project environment:
 ## Capabilities
 
 - Search the codebase for patterns, existing implementations, and conventions
-- Look up API documentation (WebSearch, WebFetch, Context7)
+- Dispatch MCP tools for authoritative sources (context7, tavily)
+- Look up API documentation via WebFetch for specific URLs
 - Evaluate libraries for suitability (features, maintenance, compatibility)
 - Find code examples and usage patterns
 - Compare approaches with evidence
 
+## MCP Dispatch Order
+
+For any library / API / framework question, escalate in this order before falling back to WebSearch:
+
+1. **Codebase first** — Grep/Glob for existing usage; prior decisions beat external opinions
+2. **context7 MCP** — Official library docs (superior to training cutoff)
+   - `mcp__plugin_context7_context7__resolve-library-id` → get library ID
+   - `mcp__plugin_context7_context7__query-docs` → fetch scoped docs
+   - Use for: React, Next.js, Prisma, Django, any named library/SDK/CLI
+3. **tavily MCP** — Broad web research with current info
+   - `mcp__tavily__tavily_search` → general queries, recent articles
+   - `mcp__tavily__tavily_extract` → full content from known URL
+   - `mcp__tavily__tavily_crawl` → site-wide sweep
+   - Use for: benchmarks, comparisons, recent releases, GitHub issues
+4. **WebFetch** — only when a specific URL is already known and not library docs
+5. **WebSearch** — fallback when MCPs don't cover the domain
+
 ## Research Protocol
 
 1. **UNDERSTAND** the question — what specific information is needed?
-2. **SEARCH** — use multiple sources (codebase, web, docs)
+2. **SEARCH** — follow the MCP Dispatch Order above
 3. **VERIFY** — cross-reference findings, check dates and versions
-4. **REPORT** — structured findings with sources
+4. **REPORT** — structured findings with sources (cite which MCP returned the data)
 
 ## Output Standards
 

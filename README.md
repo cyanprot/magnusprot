@@ -54,7 +54,7 @@ graph TD
 
 ---
 
-## Skills (23)
+## Skills (19)
 
 Skills are namespaced as `/magnusprot:<skill-name>` when installed as a plugin.
 
@@ -63,8 +63,8 @@ Skills are namespaced as `/magnusprot:<skill-name>` when installed as a plugin.
 | Tier | Model | Skills |
 |------|-------|--------|
 | **Light** | `haiku` | clean-dev, commit-dev, deps-dev, docs-dev, init-dev |
-| **Medium** | `sonnet` | explain-anly, healthcheck-dev, perf-anly, respond-anly, research-sys, security-dev, worktree-flow |
-| **Heavy** | inherit | brainstorm-flow, debug-anly, execute-flow, implement-flow, plan-flow, plancheck-flow, review-anly, session-handoff, simplify-anly, skilldev-sys, verify-anly |
+| **Medium** | `sonnet` | perf-anly, respond-anly, research-sys, security-dev, worktree-flow |
+| **Heavy** | inherit | brainstorm-flow, debug-anly, execute-flow, implement-flow, plan-flow, plancheck-flow, review-anly, simplify-anly, verify-anly |
 
 ### Core Workflow Chain
 
@@ -77,7 +77,6 @@ Supporting: `implement-flow`, `review-anly`, `worktree-flow`
 | Skill | Description |
 |-------|-------------|
 | `review-anly` | 7-perspective code quality analysis |
-| `explain-anly` | Code structure, functions, and call graph explanation |
 | `simplify-anly` | Complexity audit — dead code, DRY, YAGNI, coupling |
 | `perf-anly` | Performance analysis — bottlenecks, complexity, N+1 queries |
 | `respond-anly` | Code review feedback response — verify before agreeing |
@@ -88,22 +87,21 @@ Supporting: `implement-flow`, `review-anly`, `worktree-flow`
 | Skill | Description |
 |-------|-------------|
 | `init-dev` | Project context loading — scan configs, deps, git state |
-| `commit-dev` | Auto-format as Conventional Commits |
+| `commit-dev` | Conventional Commits + pre-commit typecheck/lint gate |
 | `clean-dev` | System cleanup (multi-distro: apt/dnf) |
 | `deps-dev` | Dependency status and security audit |
 | `docs-dev` | Documentation generation and audit |
-| `security-dev` | Security vulnerability scanning — secrets, injection, unsafe APIs |
-| `healthcheck-dev` | Project health verification — parallel build, runtime, docs checks |
+| `security-dev` | Security scan — secrets, injection, unsafe APIs, MCP/plugin config audit |
 
 ### Workflow
 
 | Skill | Description |
 |-------|-------------|
 | `brainstorm-flow` | Requirements exploration — shape design before implementation |
-| `plan-flow` | TDD plan + campaign/sprint contracts |
+| `plan-flow` | TDD plan + campaign/sprint contracts + context7 library lookup |
 | `plancheck-flow` | Plan review — catch over-engineering and scope creep |
-| `execute-flow` | Plan execution — batch or subagent mode with campaign tracking |
-| `implement-flow` | TDD-first implementation — strict red-green-refactor |
+| `execute-flow` | Plan execution with campaign/remember session-state integration |
+| `implement-flow` | TDD-first implementation with test-strategist dispatch |
 | `worktree-flow` | Git worktree lifecycle — setup, develop, merge/PR |
 
 ### System & Utilities
@@ -111,9 +109,7 @@ Supporting: `implement-flow`, `review-anly`, `worktree-flow`
 | Skill | Description |
 |-------|-------------|
 | `debug-anly` | Root cause analysis before fixing |
-| `research-sys` | API/library investigation with structured findings |
-| `session-handoff` | Session wrap-up — save progress, update memory, summarize |
-| `skilldev-sys` | Skill creation and testing — TDD skill development |
+| `research-sys` | MCP-dispatched library/API research (context7 + tavily) |
 
 ---
 
@@ -124,7 +120,7 @@ Supporting: `implement-flow`, `review-anly`, `worktree-flow`
 | `code-reviewer` | Plan-aligned review with 7-perspective framework |
 | `code-architect` | System design evaluation and structural trade-offs |
 | `code-explorer` | Deep codebase exploration and execution path tracing |
-| `evaluator` | Black-box live-app testing via Playwright (4-phase: happy path, edge cases, mobile, regression) |
+| `evaluator` | Black-box live-app testing via Playwright (5-phase: happy path, edge cases, mobile, regression, API) |
 | `silent-failure-hunter` | Finds bugs that don't throw errors — empty results, missing data, swallowed exceptions |
 | `incident-investigator` | Error chain tracing for loud failures — stack traces, crash analysis |
 | `test-strategist` | Test design — edge cases, coverage gaps, test architecture |

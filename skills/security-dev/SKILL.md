@@ -57,6 +57,24 @@ Run if tools are installed:
 - Python: `pip-audit` or `safety check`
 - Node.js: `pnpm audit`
 
+### 6. MCP / Plugin Config Audit
+
+Inspect AI tooling configs for untrusted execution paths:
+
+- **Project `.mcp.json`** and **`.claude/settings.json`** (if present)
+- **User `~/.claude/settings.json`** (audit only when scoped to user config)
+
+Flag for each MCP server entry:
+- `"command"` that points to a non-standard binary (not `npx`, `uvx`, or a vetted package)
+- Shell-wrapped commands: `"sh -c ..."`, `"bash -c ..."`
+- `"env"` blocks containing raw secrets (API keys, tokens) instead of `${ENV_VAR}` references
+- Servers pulled from a `source` repo that isn't pinned to a tag/commit
+- Permissions `allow` list with over-broad patterns: `Bash(*)`, `mcp__*`
+
+Flag for plugins:
+- Enabled plugin from a marketplace not in `extraKnownMarketplaces`
+- Plugin hook `command` with inline shell that writes outside the project
+
 ## Commands (Internal)
 
 ```bash

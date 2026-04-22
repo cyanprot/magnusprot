@@ -52,26 +52,44 @@ git status
 git diff --staged
 ```
 
-### 2. Analyze Changes
+### 2. Pre-commit Gate (BLOCKING)
+
+Before composing the message, run the project's typecheck/lint if configured. Do NOT commit with type errors.
+
+Detect and run in order:
+- **TypeScript/Node**: `npm run typecheck` or `tsc --noEmit` if a `tsconfig.json` exists and the script is defined
+- **Python**: `pyright` or `mypy` if configured (`pyrightconfig.json`, `mypy.ini`, or `[tool.mypy]` in `pyproject.toml`)
+- **Lint**: `npm run lint` / `ruff check .` if the project configures it
+
+If any gate fails → STOP, report errors to user, do NOT commit.
+If no gate is configured → proceed (don't invent one).
+
+Also verify git identity is set:
+```bash
+git config user.name && git config user.email
+```
+Both must be non-empty.
+
+### 3. Analyze Changes
 - What files were changed?
 - Nature of the change? (feature, bug fix, refactoring, etc.)
 - Related issues?
 
-### 3. Determine Commit Type
+### 4. Determine Commit Type
 Select the most appropriate type for the changes
 
-### 4. Write Commit Message
+### 5. Write Commit Message
 - Title: Under 50 chars, imperative mood
 - Body: Explain what and why
 
-### 5. Execute Commit
+### 6. Execute Commit
 ```bash
 git commit -m "$(cat <<'EOF'
 <type>(<scope>): <description>
 
 <body>
 
-Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
 EOF
 )"
 ```

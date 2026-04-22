@@ -17,6 +17,18 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 **Save plans to:** `docs/plans/YYYY-MM-DD-<feature-name>.md`
 
+## Library Lookup (Before Committing to Stack)
+
+When the plan introduces a new library, framework, or SDK — **dispatch context7 BEFORE writing the plan**:
+
+1. `mcp__plugin_context7_context7__resolve-library-id` with the library name
+2. `mcp__plugin_context7_context7__query-docs` with the specific API/pattern the plan depends on
+3. Paste the authoritative snippet into the plan as a code block (not paraphrased)
+
+Skip this when the codebase already uses the library — the existing code is the source of truth.
+
+Why: plans that cite training-cutoff API shapes break on execution. context7 catches version drift at plan time, not at task-3 failure time.
+
 ## Bite-Sized Task Granularity
 
 **Each step is one action (2-5 minutes):**

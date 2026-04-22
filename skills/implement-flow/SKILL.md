@@ -29,14 +29,15 @@ Follow this sequence exactly. Do not skip steps.
 
 1. **READ** the task specification (provided as $ARGUMENTS)
 2. **READ** existing related files -- imports, interfaces, patterns already in the project
-3. **RED** -- Write failing tests
-4. **VERIFY RED** -- Run tests and confirm they FAIL
-5. **GREEN** -- Write minimal implementation to make tests pass
-6. **VERIFY GREEN** -- Run tests and confirm they PASS
-7. **REFACTOR** -- Clean up if needed, verify tests still pass
-8. **SELF-REVIEW** -- Run through the checklist below
-9. **FULL SUITE** -- Run the complete test suite to ensure no regressions
-10. **GIT COMMIT** -- Stage and commit your changes
+3. **TEST STRATEGY** -- If the task has non-trivial edge cases, concurrency, state transitions, or 3+ distinct behaviors: dispatch `test-strategist` agent to produce a test plan before writing the RED test. Skip for small/obvious tasks (single behavior, trivial input/output).
+4. **RED** -- Write failing tests (informed by strategy if one was produced)
+5. **VERIFY RED** -- Run tests and confirm they FAIL
+6. **GREEN** -- Write minimal implementation to make tests pass
+7. **VERIFY GREEN** -- Run tests and confirm they PASS
+8. **REFACTOR** -- Clean up if needed, verify tests still pass
+9. **SELF-REVIEW** -- Run through the checklist below
+10. **FULL SUITE** -- Run the complete test suite to ensure no regressions
+11. **GIT COMMIT** -- Stage and commit your changes
 
 ## TDD Workflow
 
@@ -103,7 +104,7 @@ feat(<scope>): <short description>
 
 <optional body explaining what and why>
 
-Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
 EOF
 )"
 ```

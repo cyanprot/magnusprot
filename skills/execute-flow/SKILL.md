@@ -20,16 +20,25 @@ Two execution modes for implementation plans:
 
 ### Step 0: Campaign Resume Check
 
-Before anything else, check for an active campaign:
+Before anything else, check for active session state in this order:
 
-1. Read `.claude/campaign.json` in the project root
-2. **If exists and `current_phase` is not `"complete"`:**
+1. **Read `.remember/remember.md`** (if exists) — last session's handoff note. Surfaces mid-task blockers, undocumented decisions, or WIP that never made it to `campaign.json`. Display verbatim.
+2. **Read `.claude/campaign.json`** in the project root
+3. **If campaign exists and `current_phase` is not `"complete"`:**
    - Load `continuation_prompt` — display it to orient context
    - Read the current sprint contract from `.claude/sprint-contracts/<project>-<current_sprint>.json`
    - Set `current_phase` to `"execute"` and save
    - Announce: "Resuming campaign: <project>, sprint <N>/<total>. <continuation_prompt>"
    - Skip to the current sprint's tasks in the plan
-3. **If not found or `current_phase` is `"complete"`:** proceed normally (no campaign)
+4. **If campaign not found or `current_phase` is `"complete"`:** proceed normally (no campaign)
+
+### On Mid-Sprint Pause or Blocker
+
+When the user pauses, a blocker appears, or context is about to be lost (compaction, session end):
+
+1. Update `campaign.json` `continuation_prompt` with current state
+2. **Invoke `/remember`** — writes `.remember/remember.md` with forward-looking handoff. Captures nuances `campaign.json` can't: open questions, reviewer feedback pending, local env quirks.
+3. Announce pause point to user with specific resume instruction
 
 ### After Each Sprint Completes
 

@@ -17,8 +17,20 @@ You may ONLY use Playwright MCP tools:
 - `browser_console_messages`, `browser_network_requests`, `browser_wait_for`
 - `browser_press_key`, `browser_fill_form`, `browser_select_option`
 - `browser_hover`, `browser_drag`, `browser_tabs`
+- `browser_run_code` (for `fetch()` calls in API probing — see Phase 5)
 
 Do NOT use: Read, Edit, Write, Grep, Glob, Bash, or any file/code tools.
+
+## API Probing (Black-Box)
+
+You can still black-box-test API endpoints WITHOUT reading source code, by using `browser_evaluate` or `browser_run_code` to fire `fetch()` calls from the page context. Treat the API as another user-observable surface:
+
+- Response status codes (2xx/4xx/5xx)
+- Response body structure (fields present, types match contract)
+- Error messages returned to client
+- Auth/CORS behavior
+
+This is still "what a user sees" — via their browser's network layer, which is exactly the visible surface.
 
 ## Input
 
@@ -66,6 +78,22 @@ Quick check that unrelated visible features still work:
 2. Take snapshot — verify main navigation elements present
 3. Click 2-3 existing links/buttons — verify they respond
 4. Check browser console for new errors (filter out pre-existing noise)
+
+### Phase 5: API Contract (SOFT gate, only if contract lists API behaviors)
+
+If the sprint contract's `testable_behaviors` mention API endpoints or network responses, verify them via `browser_run_code` / `browser_evaluate`:
+
+```js
+const r = await fetch('/api/endpoint', { method: 'POST', body: JSON.stringify({...}) });
+({ status: r.status, body: await r.json() })
+```
+
+Check:
+- Status code matches contract expectation
+- Response shape matches contract (fields, types)
+- Error responses are well-formed (not stack traces)
+
+Skip this phase if the contract describes UI-only behaviors.
 
 ## Grading Framework
 
